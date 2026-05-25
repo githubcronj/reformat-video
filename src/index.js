@@ -1,4 +1,7 @@
-require("dotenv").config();
+require('dotenv').config();
 
-console.log("Service Started");
+const { startVideoConsumer } = require('./consumers/video.consumer');
 
+console.log('WebM to MP4 service starting...');
+
+startVideoConsumer();
