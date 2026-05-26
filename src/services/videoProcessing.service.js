@@ -8,7 +8,7 @@ const {
 } = require('./s3.service');
 
 const { convertWebmToMp4 } = require('./ffmpeg.service');
-const { updateProcess } = require('./updateProcess.service');
+const { updateProcess } = require('./api.service');
 
 const ensureDir = (dir) => {
   if (!fs.existsSync(dir)) {
@@ -25,13 +25,16 @@ const removeLocalFile = (filePath) => {
 };
 
 const processSingleVideo = async (webmKey, type) => {
-  const fileName = path.basename(webmKey);
-  const mp4FileName = fileName.replace('.webm', '.mp4');
+  console.log('STEP 5 ==> IN PROCCESSSINGLEVIDEO FILE');
 
-  const inputDir = './temp/input';
-  const outputDir = './temp/output';
+  const fileName = path.basename(webmKey); // file = webkey
+  console.log("in ProccessSingleVideo webmkey", webmKey)
+  const mp4FileName = fileName.replace('.webm', '.mp4'); 
 
-  ensureDir(inputDir);
+  const inputDir = './src/temp/input';
+  const outputDir = './src/temp/output';
+
+  ensureDir(inputDir); //any file exist or not clean directory
   ensureDir(outputDir);
 
   const inputPath = `${inputDir}/${type}-${fileName}`;
@@ -43,19 +46,26 @@ const processSingleVideo = async (webmKey, type) => {
 
   await convertWebmToMp4(inputPath, outputPath);
 
-  await uploadFileToS3(outputPath, mp4Key);
+  // await removeLocalFile(inputPath); make it async functon
 
-  removeLocalFile(inputPath);
-  removeLocalFile(outputPath);
+  await uploadFileToS3(outputPath, mp4Key); // mp4filename
 
-  return mp4Key;
+  // removeLocalFile(inputPath);
+  removeLocalFile(outputPath); //add aw
+
+  return mp4Key; //mp4filename
 };
 
 const processVideo = async (payload) => {
   const { responseId, questionId, webcamKey, screenKey } = payload;
+  console.log('STEP 3 ==> IN PROCEESSVIDEO FILE', payload);
 
-  const webcamMp4Key = await processSingleVideo(webcamKey, 'webcam');
+
+  const webcamMp4Key = await processSingleVideo(webcamKey, 'webcam'); // send both 
   const screenMp4Key = await processSingleVideo(screenKey, 'screen');
+
+
+  console.log('STEP 8 ==> IN going to api FILE', webcamMp4Key,screenMp4Key);
 
   await updateProcess({
     responseId,
@@ -64,7 +74,7 @@ const processVideo = async (payload) => {
     screenMp4Key,
   });
 
-  // Delete original webm files from S3 later if required
+  // Delete original webm files from S3 later if required // check delete all togethere
   // await deleteFileFromS3(webcamKey);
   // await deleteFileFromS3(screenKey);
 

@@ -18,14 +18,16 @@ const downloadFileFromS3 = (localPath, s3Key) => {
       Key: s3Key,
     };
 
+    console.log('STEP 6 ==> IN downloadFileFromS3 FILE');
+
     console.log('Downloading from S3:', params);
 
-    const file = fs.createWriteStream(localPath);
+    const file = fs.createWriteStream(localPath); //
 
     const stream = s3
-      .getObject(params)
-      .createReadStream()
-      .pipe(file);
+      .getObject(params)  // read file data form s3
+      .createReadStream() // create a readable stream
+      .pipe(file); // store data to file
 
     stream.on('finish', () => {
       console.log('Downloaded Successfully:', localPath);
@@ -48,7 +50,7 @@ const uploadFileToS3 = (localPath, s3Key) => {
     try {
       fileContent = fs.readFileSync(localPath);
     } catch (err) {
-      return rej({ code: 500, message: err });
+      return reject({ code: 500, message: err });
     }
 
     const params = {
@@ -65,14 +67,14 @@ const uploadFileToS3 = (localPath, s3Key) => {
         return reject(err);
       }
 
-      console.log('File uploaded successfully:', data,data.Location);
+      console.log('File uploaded successfully:', data, data.Location);
 
       resolve(data);
     });
   });
 };
 
-// for not dont use it
+// for dont use it
 const deleteFileFromS3 = (s3Key) => {
   return new Promise((resolve, reject) => {
     const params = {

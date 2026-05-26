@@ -30,6 +30,8 @@ app.on('processing_error', (err) => {
 
 const startVideoConsumer = () => {
   console.log('Video consumer started...');
+  console.log('STEP 2 ==> IN CONSUMER FILE');
+
   app.start();
 };
 
