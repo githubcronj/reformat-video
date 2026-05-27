@@ -6,17 +6,18 @@ const {
 
 const app = Consumer.create({
   queueUrl: process.env.AWS_WEBM_TO_MP4_QUEUE,
+  waitTimeSeconds: 20,
 
   handleMessage: async (message) => {
     console.log('Message', message);
 
     const payload = JSON.parse(message.Body);
 
-    console.log('Parsed Payload', payload);
+    console.log('STEP 2.1 Parsed Payload', payload);
 
     await processVideo(payload);
 
-    console.log('video processed and updated');
+    console.log('End - video processed and updated');
   },
 });
 

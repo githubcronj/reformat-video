@@ -22,7 +22,7 @@ const downloadFileFromS3 = (localPath, s3Key) => {
 
     console.log('Downloading from S3:', params);
 
-    const file = fs.createWriteStream(localPath); //
+    const file = fs.createWriteStream(localPath); 
 
     const stream = s3
       .getObject(params)  // read file data form s3
@@ -74,7 +74,6 @@ const uploadFileToS3 = (localPath, s3Key) => {
   });
 };
 
-// for dont use it
 const deleteFileFromS3 = (s3Key) => {
   return new Promise((resolve, reject) => {
     const params = {
