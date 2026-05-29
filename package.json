@@ -4,8 +4,8 @@
   "description": "A lightweight service to convert and reformat video files.",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "start": "APP_ENV=prod node src/index.js",
+    "dev": "APP_ENV=dev nodemon src/index.js"
   },
   "keywords": [],
   "author": "",
