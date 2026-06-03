@@ -1,5 +1,5 @@
-const AWS = require('aws-sdk');
-const fs = require('fs');
+const AWS = require("aws-sdk");
+const fs = require("fs");
 
 const ACCESS = process.env.AWS_ACCESS_KEY_ID;
 const SECRET = process.env.AWS_SECRET_ACCESS_KEY;
@@ -18,26 +18,18 @@ const downloadFileFromS3 = (localPath, s3Key) => {
       Key: s3Key,
     };
 
-    console.log('STEP 6 ==> IN downloadFileFromS3 FILE');
-
-    console.log('Downloading from S3:', params);
-
-    const file = fs.createWriteStream(localPath); 
+    const file = fs.createWriteStream(localPath);
 
     const stream = s3
-      .getObject(params)  // read file data form s3
+      .getObject(params) // read file data form s3
       .createReadStream() // create a readable stream
       .pipe(file); // store data to file
 
-    stream.on('finish', () => {
-      console.log('Downloaded Successfully:', localPath);
-
+    stream.on("finish", () => {
       resolve(localPath);
     });
 
-    stream.on('error', (err) => {
-      console.log('S3 Download Error:', err);
-
+    stream.on("error", (err) => {
       reject(err);
     });
   });
@@ -57,17 +49,13 @@ const uploadFileToS3 = (localPath, s3Key) => {
       Bucket: BUCKET_NAME,
       Key: s3Key,
       Body: fileContent,
-      ContentType: 'video/mp4',
+      ContentType: "video/mp4",
     };
 
     s3.upload(params, (err, data) => {
       if (err) {
-        console.log('S3 Upload Error:', err);
-
         return reject(err);
       }
-
-      console.log('File uploaded successfully:', data, data.Location);
 
       resolve(data);
     });
@@ -83,21 +71,16 @@ const deleteFileFromS3 = (s3Key) => {
 
     s3.deleteObject(params, (err, data) => {
       if (err) {
-        console.log('S3 Delete Error:', err);
-
         return reject(err);
       }
-
-      console.log('File deleted successfully:', s3Key);
 
       resolve(data);
     });
   });
 };
 
-
 module.exports = {
   downloadFileFromS3,
   uploadFileToS3,
-  deleteFileFromS3
+  deleteFileFromS3,
 };

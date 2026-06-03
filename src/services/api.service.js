@@ -1,24 +1,27 @@
-const axios = require('axios');
+const axios = require("axios");
 const https = require("https");
+const { getBackendUrl, isDevEnv } = require("../utils/environment");
 
 function updateProcess(data) {
-  console.log("in api file", data)
-  console.log("process.env.AUTH_SECRET_KEY")
-
-  const httpsAgent = new https.Agent({
-    rejectUnauthorized: false, // <--- bypass certificate validation
-  });
+  console.log("in api getBackendUrl", getBackendUrl());
+  console.log("in api isDevEnv", isDevEnv());
 
   const config = {
-    method: 'patch',
-    url: `${process.env.BACKEND_URL}/response/video-reformat`,
+    method: "patch",
+    url: `${getBackendUrl()}/response/video-reformat`,
     headers: {
-      'Content-Type': 'application/json',
-      Authorization: 'ENGINE_SECRET',
+      "Content-Type": "application/json",
+      Authorization: "ENGINE_SECRET",
     },
     data: JSON.stringify(data),
-    httpsAgent
   };
+
+  if (isDevEnv()) {
+    config.httpsAgent = new https.Agent({
+      rejectUnauthorized: false,
+    });
+  }
+
   return axios(config);
 }
 
