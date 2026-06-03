@@ -3,7 +3,6 @@ const https = require("https");
 const { getBackendUrl, isDevEnv } = require("../utils/environment");
 
 function updateProcess(data) {
-  console.log("in api file", data);
   console.log("in api getBackendUrl", getBackendUrl());
   console.log("in api isDevEnv", isDevEnv());
 
@@ -12,7 +11,7 @@ function updateProcess(data) {
     url: `${getBackendUrl()}/response/video-reformat`,
     headers: {
       "Content-Type": "application/json",
-      Authorization: 'ENGINE_SECRET',
+      Authorization: "ENGINE_SECRET",
     },
     data: JSON.stringify(data),
   };

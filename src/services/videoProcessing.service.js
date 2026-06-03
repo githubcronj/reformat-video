@@ -1,18 +1,16 @@
-const path = require('path');
-const fs = require('fs');
+const path = require("path");
+const fs = require("fs");
 
 const {
   downloadFileFromS3,
   uploadFileToS3,
   deleteFileFromS3,
-} = require('./s3.service');
+} = require("./s3.service");
 
-const { convertWebmToMp4 } = require('./ffmpeg.service');
-const { updateProcess } = require('./api.service');
+const { convertWebmToMp4 } = require("./ffmpeg.service");
+const { updateProcess } = require("./api.service");
 
 const removeFilesFromDir = (dir) => {
-  console.log('STEP 5.1 ==> removeFilesFromDir');
-
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
     return;
@@ -21,7 +19,6 @@ const removeFilesFromDir = (dir) => {
   const files = fs.readdirSync(dir);
 
   if (!files.length) {
-    console.log('No files found in directory:', dir);
     return;
   }
 
@@ -30,39 +27,47 @@ const removeFilesFromDir = (dir) => {
 
     if (fs.lstatSync(filePath).isFile()) {
       fs.unlinkSync(filePath);
-      console.log('Deleted stale file:', filePath);
     }
   });
 };
 
-const getMp4Key = (webmKey) => webmKey.replace(/\.webm$/i, '.mp4');
+const getMp4Key = (webmKey) => webmKey.replace(/\.webm$/i, ".mp4");
 
 const removeLocalFile = async (filePath) => {
   try {
     if (fs.existsSync(filePath)) {
       await fs.promises.unlink(filePath);
-      console.log('Step Local file removed:', filePath);
     }
   } catch (err) {
-    console.log('Error removing local file:', filePath, err.message);
+    console.log("Error removing local file:", filePath, err.message);
   }
 };
 
 const processSingleVideo = async (webmKey, type) => {
-  console.log('STEP 4 ==> IN PROCCESSSINGLEVIDEO FILE webmKey',webmKey,"type",type);
+  console.log(
+    "STEP 4 ==> IN PROCCESSSINGLEVIDEO FILE webmKey",
+    webmKey,
+    "type",
+    type,
+  );
 
   const localWebmFileName = path.basename(webmKey); // to get a only the WEBM file name and exclude s3 path
   const s3Mp4Key = getMp4Key(webmKey); // final MP4 path in S3
 
-  const localInputDir = './src/temp/input';
-  const localOutputDir = './src/temp/output';
-
+  const localInputDir = "./src/temp/input";
+  const localOutputDir = "./src/temp/output";
 
   removeFilesFromDir(localInputDir);
   removeFilesFromDir(localOutputDir);
 
-  const localWebmPath = path.join(localInputDir, `${type}-${localWebmFileName}`);
-  const localMp4Path = path.join(localOutputDir, `${type}-${path.basename(s3Mp4Key)}`);
+  const localWebmPath = path.join(
+    localInputDir,
+    `${type}-${localWebmFileName}`,
+  );
+  const localMp4Path = path.join(
+    localOutputDir,
+    `${type}-${path.basename(s3Mp4Key)}`,
+  );
 
   await downloadFileFromS3(localWebmPath, webmKey);
 
@@ -79,14 +84,16 @@ const processSingleVideo = async (webmKey, type) => {
 
 const processVideo = async (payload) => {
   const { responseId, questionId, webcamKey, screenKey } = payload;
-  console.log('STEP 3 ==> IN PROCEESSVIDEO FILE', payload);
+  console.log("STEP 3 ==> IN PROCEESSVIDEO FILE", payload);
 
+  const webcamMp4Key = await processSingleVideo(webcamKey, "webcam");
+  const screenMp4Key = await processSingleVideo(screenKey, "screen");
 
-  const webcamMp4Key = await processSingleVideo(webcamKey, 'webcam');
-  const screenMp4Key = await processSingleVideo(screenKey, 'screen');
-
-
-  console.log('STEP 8 ==> IN going to api FILE webcamMp4Key and screenMp4Key', webcamMp4Key, screenMp4Key);
+  console.log(
+    "STEP 8 ==> IN going to api FILE webcamMp4Key and screenMp4Key",
+    webcamMp4Key,
+    screenMp4Key,
+  );
 
   await updateProcess({
     responseId,
@@ -95,14 +102,10 @@ const processVideo = async (payload) => {
     screenMp4Key,
   });
 
-  // Delete original webm files from S3 later if required 
-  await Promise.all([
-    deleteFileFromS3(webcamKey),
-    deleteFileFromS3(screenKey),
-  ]);
+  // Delete original webm files from S3 later if required
+  await Promise.all([deleteFileFromS3(webcamKey), deleteFileFromS3(screenKey)]);
 
-
-  console.log('Final - Video processing completed successfully');
+  console.log("Final - Video processing completed successfully");
 
   return {
     responseId,
